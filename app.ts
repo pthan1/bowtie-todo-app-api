@@ -1,6 +1,6 @@
 import express, { Express, Response, Request } from "express";
 
-import { Project } from "./types/.d";
+import { Project, Task } from "./types/.d";
 
 const app: Express = express();
 const cors = require("cors");
@@ -31,25 +31,50 @@ app.post("/api/v1/projects", (req: Request, res: Response) => {
   res.json(id);
 });
 
-app.put("/api/v1/projects/:id", (req: Request, res: Response) => {
-  const { id, name } = req.params;
+//edit project name
+app.put("/api/v1/projects/:projectId", (req: Request, res: Response) => {
+  const { projectId } = req.params;
+  const { newName } = req.body;
   const index = app.locals.projects
     .map((project: Project) => {
       return project.id;
     })
-    .indexOf(id);
-  app.locals.projects[index].name = name;
+    .indexOf(projectId);
+  app.locals.projects[index].name = newName;
+  res.json(projectId);
 });
 
-app.delete("/api/v1/projects/:id", (req: Request, res: Response) => {
-  const { id } = req.params;
+app.delete("/api/v1/projects/:projectId", (req: Request, res: Response) => {
+  const { projectId } = req.params;
   const index = app.locals.projects
     .map((project: Project) => {
       return project.id;
     })
-    .indexOf(id);
+    .indexOf(projectId);
   app.locals.projects.splice(index, 1);
-  res.json(id);
+  res.json(projectId);
+});
+
+app.post("/api/v1/projects/:projectId/tasks", (req: Request, res: Response) => {
+  const { name: newTask } = req.body;
+  const { projectId } = req.params;
+
+  const index = app.locals.projects
+    .map((project: Project) => {
+      return project.id;
+    })
+    .indexOf(projectId);
+  let newTaskId;
+  if (!app.locals.projects[index].tasks) {
+    newTaskId = 1;
+  } else {
+    const ids: number[] = app.locals.projects[index].map((task: Task) => {
+      return task.id;
+    });
+    newTaskId = Math.max(...ids) + 1;
+  }
+  app.locals.projects[index].tasks.push({ ...newTask, id: newTaskId });
+  res.json(newTaskId);
 });
 
 app.listen(app.get("port"), () => {
