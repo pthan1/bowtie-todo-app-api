@@ -27,7 +27,7 @@ app.post("/api/v1/projects", (req: Request, res: Response) => {
     });
     id = Math.max(...ids) + 1;
   }
-  app.locals.projects.push({ ...req.body, id: id });
+  app.locals.projects.push({ ...req.body, id: id, tasks: [] });
   res.json(id);
 });
 
