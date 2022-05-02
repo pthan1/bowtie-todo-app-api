@@ -77,7 +77,11 @@ app.post("/api/v1/projects/:id/tasks", (req: Request, res: Response) => {
     });
     newTaskId = Math.max(...ids) + 1;
   }
-  app.locals.projects[index].tasks.push({ ...req.body, id: newTaskId });
+  app.locals.projects[index].tasks.push({
+    ...req.body,
+    id: newTaskId,
+    is_complete: false,
+  });
   res.json(newTaskId);
 });
 
@@ -98,8 +102,8 @@ app.put(
         return task.id;
       })
       .indexOf(taskIdNum);
-    app.locals.projects[projectIndex].tasks[taskIndex].isCompleted =
-      !app.locals.projects[projectIndex].tasks[taskIndex].isCompleted;
+    app.locals.projects[projectIndex].tasks[taskIndex].is_complete =
+      !app.locals.projects[projectIndex].tasks[taskIndex].is_complete;
     res.json(taskIdNum);
   }
 );
