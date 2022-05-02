@@ -19,7 +19,7 @@ app.get("/api/v1/projects/", (req: Request, res: Response) => {
 
 app.post("/api/v1/projects", (req: Request, res: Response) => {
   let id: number;
-  if (!app.locals.projects) {
+  if (app.locals.projects.length === 0) {
     id = 1;
   } else {
     const ids: number[] = app.locals.projects.map((project: Project) => {
@@ -32,20 +32,24 @@ app.post("/api/v1/projects", (req: Request, res: Response) => {
 });
 
 //edit project name
-app.put("/api/v1/projects/:projectId", (req: Request, res: Response) => {
-  const { projectId } = req.params;
-  const { newName } = req.body;
+app.put("/api/v1/projects/:id", (req: Request, res: Response) => {
+  const { id } = req.params;
+  const projectId = Number(id);
+  const { name: newProjectName } = req.body;
   const index = app.locals.projects
     .map((project: Project) => {
       return project.id;
     })
     .indexOf(projectId);
-  app.locals.projects[index].name = newName;
+  console.log({ projectId }, { newProjectName });
+  console.log({ index });
+  app.locals.projects[index].name = newProjectName;
   res.json(projectId);
 });
 
-app.delete("/api/v1/projects/:projectId", (req: Request, res: Response) => {
-  const { projectId } = req.params;
+app.delete("/api/v1/projects/:id", (req: Request, res: Response) => {
+  const { id } = req.params;
+  const projectId = Number(id);
   const index = app.locals.projects
     .map((project: Project) => {
       return project.id;
@@ -55,27 +59,71 @@ app.delete("/api/v1/projects/:projectId", (req: Request, res: Response) => {
   res.json(projectId);
 });
 
-app.post("/api/v1/projects/:projectId/tasks", (req: Request, res: Response) => {
-  const { name: newTask } = req.body;
-  const { projectId } = req.params;
+app.post("/api/v1/projects/:id/tasks", (req: Request, res: Response) => {
+  const { id } = req.params;
+  const projectId = Number(id);
 
   const index = app.locals.projects
     .map((project: Project) => {
       return project.id;
     })
     .indexOf(projectId);
-  let newTaskId;
-  if (!app.locals.projects[index].tasks) {
+  let newTaskId: number;
+  if (app.locals.projects[index].tasks.length === 0) {
     newTaskId = 1;
   } else {
-    const ids: number[] = app.locals.projects[index].map((task: Task) => {
+    const ids: number[] = app.locals.projects[index].tasks.map((task: Task) => {
       return task.id;
     });
     newTaskId = Math.max(...ids) + 1;
   }
-  app.locals.projects[index].tasks.push({ ...newTask, id: newTaskId });
+  app.locals.projects[index].tasks.push({ ...req.body, id: newTaskId });
   res.json(newTaskId);
 });
+
+//toggle task completed
+app.put(
+  "/api/v1/projects/:projectId/tasks/:taskId",
+  (req: Request, res: Response) => {
+    const { projectId, taskId } = req.params;
+    const projectIdNum = Number(projectId);
+    const taskIdNum = Number(taskId);
+    const projectIndex: number = app.locals.projects
+      .map((project: Project) => {
+        return project.id;
+      })
+      .indexOf(projectIdNum);
+    const taskIndex: number = app.locals.projects[projectIndex].tasks
+      .map((task: Task) => {
+        return task.id;
+      })
+      .indexOf(taskIdNum);
+    app.locals.projects[projectIndex].tasks[taskIndex].isCompleted =
+      !app.locals.projects[projectIndex].tasks[taskIndex].isCompleted;
+    res.json(taskIdNum);
+  }
+);
+
+app.delete(
+  "/api/v1/projects/:projectId/tasks/:taskId",
+  (req: Request, res: Response) => {
+    const { projectId, taskId } = req.params;
+    const projectIdNum = Number(projectId);
+    const taskIdNum = Number(taskId);
+    const projectIndex: number = app.locals.projects
+      .map((project: Project) => {
+        return project.id;
+      })
+      .indexOf(projectIdNum);
+    const taskIndex: number = app.locals.projects[projectIndex].tasks
+      .map((task: Task) => {
+        return task.id;
+      })
+      .indexOf(taskIdNum);
+    app.locals.projects[projectIndex].tasks.splice(taskIndex, 1);
+    res.json(taskIdNum);
+  }
+);
 
 app.listen(app.get("port"), () => {
   console.log(
