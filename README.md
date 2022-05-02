@@ -1,6 +1,6 @@
 #Todo App API
 
-This is the Express.js API for my [to-do App](https://github.com/pthan1/bowtie-todo-app).
+This is the Express.js API for my [To Do App](https://github.com/pthan1/bowtie-todo-app).
 
 ## Install and Set Up
 
